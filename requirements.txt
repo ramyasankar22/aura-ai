@@ -11,3 +11,4 @@ scipy
 pyttsx3
 plotly
 pandas
+gTTS

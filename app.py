@@ -341,9 +341,9 @@ for msg in st.session_state.messages:
 if st.session_state.last_response:
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        if st.button("🔊 Hear Aura speak", key="voice_main"):
-            with st.spinner("Speaking..."):
-                speak(st.session_state.last_response)
+      if st.button("🔊 Hear Aura speak", key="voice_main"):
+    audio = speak(st.session_state.last_response)
+    st.audio(audio, format="audio/mp3", autoplay=True)
 
 # ── MOOD GRAPH ──
 if st.session_state.show_graph:

@@ -1,0 +1,4 @@
+.env
+emotion_log.csv
+__pycache__/
+*.pyc

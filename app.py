@@ -166,25 +166,24 @@ h1 {
     border-top: 1px solid #E8D9BC !important;
 }
 
-.main .stButton > button {
+.main .stButton > button,
+.main .stButton > button p,
+.main .stButton > button span,
+div.stButton > button,
+div[data-testid="stVerticalBlock"] .stButton > button {
     background-color: #343148 !important;
     color: #D7C49E !important;
-    border: none !important;
+    border: 1.5px solid #D7C49E !important;
     border-radius: 12px !important;
     font-size: 13px !important;
     padding: 8px 20px !important;
     transition: all 0.2s !important;
+    font-weight: 500 !important;
 }
-            
-            .main .stButton > button p {
-    color: #D7C49E !important;
-}
-
-.stTextInput label {
-    color: #343148 !important;
-}
+div.stButton > button:hover,
 .main .stButton > button:hover {
     background-color: #4a4560 !important;
+    color: #D7C49E !important;
     box-shadow: 0 4px 12px rgba(52,49,72,0.25) !important;
 }
 

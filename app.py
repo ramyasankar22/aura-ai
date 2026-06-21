@@ -49,7 +49,9 @@ if "chain" not in st.session_state:
 
 st.markdown("""
 <style>
-html, body, .stApp, [data-testid="stAppViewContainer"] {
+html, body, .stApp, [data-testid="stAppViewContainer"],
+[data-testid="stAppViewContainer"] > div,
+[data-testid="stAppViewContainer"] > div > div {
     background-color: #F5EFE4 !important;
     color: #343148 !important;
 }
@@ -179,6 +181,13 @@ div[data-testid="stVerticalBlock"] .stButton > button {
     padding: 8px 20px !important;
     transition: all 0.2s !important;
     font-weight: 500 !important;
+            div.stButton > button *,
+.main .stButton > button *,
+.stButton button p,
+.stButton button div {
+    color: #D7C49E !important;
+    opacity: 1 !important;
+}
 }
 div.stButton > button:hover,
 .main .stButton > button:hover {

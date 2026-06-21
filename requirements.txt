@@ -1,9 +1,13 @@
 streamlit
 langchain
 langchain-groq
+langchain-core
 langchain-community
 python-dotenv
 openai-whisper
 sounddevice
 numpy
 scipy
+pyttsx3
+plotly
+pandas

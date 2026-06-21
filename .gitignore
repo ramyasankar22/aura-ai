@@ -2,3 +2,5 @@
 emotion_log.csv
 __pycache__/
 *.pyc
+*.pyo
+.DS_Store

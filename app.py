@@ -168,25 +168,21 @@ h1 {
     border-top: 1px solid #E8D9BC !important;
 }
 
-.main .stButton > button,
-.main .stButton > button p,
-.main .stButton > button span,
-div.stButton > button,
-div[data-testid="stVerticalBlock"] .stButton > button {
+.stButton > button {
     background-color: #343148 !important;
     color: #D7C49E !important;
-    border: 1.5px solid #D7C49E !important;
+    border: none !important;
     border-radius: 12px !important;
-    font-size: 13px !important;
-    padding: 8px 20px !important;
-    transition: all 0.2s !important;
+    font-size: 14px !important;
     font-weight: 500 !important;
-            div.stButton > button *,
-.main .stButton > button *,
-.stButton button p,
-.stButton button div {
+    padding: 10px 24px !important;
+}
+.stButton > button:hover {
+    background-color: #4a4560 !important;
     color: #D7C49E !important;
-    opacity: 1 !important;
+}
+.stButton > button * {
+    color: #D7C49E !important;
 }
 }
 div.stButton > button:hover,

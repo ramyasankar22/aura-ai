@@ -5,11 +5,9 @@ langchain-core
 langchain-community
 python-dotenv
 openai-whisper
-sounddevice
 numpy
 scipy
-pyttsx3
 plotly
 pandas
 gTTS
-bcrypt
+bcrypt==4.1.3

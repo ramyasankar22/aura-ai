@@ -375,7 +375,7 @@ user_input = st.chat_input(
 )
 
 if user_input:
-    emotion = detect_emotion(user_input)
+    emotion = detect_emotion(user_input, st.session_state.chain)
     st.session_state.emotion = emotion
 
     st.session_state.messages.append({

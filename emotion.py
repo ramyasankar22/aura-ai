@@ -1,34 +1,53 @@
-# Simple keyword-based emotion detection
-# No ML model needed — works perfectly for V1!
+from langchain_core.messages import HumanMessage
 
-def detect_emotion(text):
+def detect_emotion(text, llm):
+    """Use Groq LLM to detect emotion — understands context deeply!"""
+    
+    prompt = f"""Classify the emotion in this message into exactly ONE word.
+Choose from: happy, sad, anxious, angry, low energy, neutral
+
+Examples:
+"I failed my exam" → sad
+"I have so much to do and no time" → anxious  
+"I feel like doing nothing today" → low energy
+"I just got placed!" → happy
+"Everyone is annoying me" → angry
+"Just another day" → neutral
+
+Message: "{text}"
+
+Reply with ONLY the emotion word, nothing else. No punctuation, no explanation."""
+
+    try:
+        response = llm.invoke([HumanMessage(content=prompt)])
+        emotion = response.content.strip().lower()
+        
+        # Remove any punctuation just in case
+        emotion = emotion.replace(".", "").replace(",", "").strip()
+        
+        valid = ["happy", "sad", "anxious", "angry", "low energy", "neutral"]
+        
+        if emotion in valid:
+            return emotion
+        else:
+            return "neutral"
+            
+    except Exception as e:
+        print(f"Emotion detection error: {e}")
+        return fallback_detect(text)
+
+def fallback_detect(text):
+    """Backup if LLM call fails"""
     text = text.lower()
-
-    sad_words = ["tired", "sad", "cry", "depressed", "lonely",
-                 "hopeless", "empty", "hurt", "lost", "fail"]
-
-    anxious_words = ["anxious", "stressed", "worried", "nervous",
-                     "scared", "panic", "overwhelmed", "fear", "exam"]
-
-    angry_words = ["angry", "frustrated", "annoyed", "mad",
-                   "irritated", "furious", "hate", "upset"]
-
-    happy_words = ["happy", "great", "excited", "good", "amazing",
-                   "wonderful", "love", "joy", "fantastic", "proud"]
-
-    low_energy_words = ["lazy", "bored", "dull", "slow",
-                        "sluggish", "unmotivated", "drained"]
-
-    # Check which emotion matches most
-    if any(word in text for word in sad_words):
+    if any(w in text for w in ["tired","sad","cry","depressed","lonely","hurt","failed"]):
         return "sad"
-    elif any(word in text for word in anxious_words):
+    elif any(w in text for w in ["anxious","stressed","worried","scared","exam","panic","overwhelmed"]):
         return "anxious"
-    elif any(word in text for word in angry_words):
+    elif any(w in text for w in ["angry","frustrated","annoyed","mad","hate","irritated"]):
         return "angry"
-    elif any(word in text for word in happy_words):
+    elif any(w in text for w in ["happy","great","excited","good","amazing","proud","love"]):
         return "happy"
-    elif any(word in text for word in low_energy_words):
+    elif any(w in text for w in ["lazy","bored","dull","unmotivated","drained","nothing"]):
         return "low energy"
     else:
         return "neutral"

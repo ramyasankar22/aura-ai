@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
-from tracker import load_emotions
+from database import load_emotions_db as load_emotions
 
 # Colour mapping for each emotion
 EMOTION_COLORS = {

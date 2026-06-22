@@ -12,3 +12,4 @@ pyttsx3
 plotly
 pandas
 gTTS
+bcrypt

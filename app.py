@@ -1,6 +1,7 @@
 import streamlit as st
 from database import *
 from memory_chain import create_chain, chat
+import streamlit.components.v1 as components
 from emotion import detect_emotion
 from suggestions import get_suggestion
 from database import (
@@ -271,9 +272,94 @@ st.markdown("""
         border: 1px solid #4a4560;
         margin-bottom: 8px;
     }
+          .cursor-glow {
+        position: fixed;
+        width: 220px;
+        height: 220px;
+        background: radial-gradient(
+            circle,
+            rgba(235,190,150,0.25),
+            rgba(235,190,150,0)
+        );
+        border-radius: 50%;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+    }
+
+
+    .spark {
+        position: fixed;
+        width: 6px;
+        height: 6px;
+        background: #e8c59a;
+        border-radius: 50%;
+        pointer-events: none;
+        animation: fadeSpark 1s ease-out forwards;
+    }
+
+
+    @keyframes fadeSpark {
+
+        0% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        100% {
+            opacity: 0;
+            transform: scale(0) translateY(-40px);
+        }
+
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
+components.html("""
+<script>
+
+const parentDoc = window.parent.document;
+
+
+let glow = parentDoc.createElement("div");
+
+glow.style.position = "fixed";
+glow.style.width = "160px";
+glow.style.height = "160px";
+
+glow.style.borderRadius = "50%";
+
+glow.style.pointerEvents = "none";
+
+glow.style.zIndex = "999999";
+
+
+glow.style.background =
+"radial-gradient(circle, rgba(215,196,158,0.35) 0%, rgba(245,239,228,0.05) 45%, transparent 70%)";
+
+
+glow.style.filter = "blur(8px)";
+
+
+glow.style.transition =
+"left 0.12s ease-out, top 0.12s ease-out";
+
+
+parentDoc.body.appendChild(glow);
+
+
+
+parentDoc.addEventListener("mousemove", function(e){
+
+    glow.style.left = e.clientX - 80 + "px";
+    glow.style.top = e.clientY - 80 + "px";
+
+});
+
+
+</script>
+""", height=1)
 # ── INIT DB ──
 init_db()
 

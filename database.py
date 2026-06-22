@@ -198,4 +198,4 @@ def load_journals(username):
 
     conn.close()
 
-    return rows
+    return [dict(r) for r in rows]

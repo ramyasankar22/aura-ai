@@ -401,7 +401,12 @@ if user_input:
     })
 
     log_emotion(st.session_state.user_name, emotion, user_input)
-    mental, physical = get_suggestion(emotion)
+    mental, physical = get_suggestion(
+        emotion,
+        user_input,
+        st.session_state.user_name,
+        st.session_state.chain  # pass the LLM
+    )
     st.session_state.mental_tip = mental
     st.session_state.physical_tip = physical
     st.rerun()

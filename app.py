@@ -2,8 +2,9 @@ import streamlit as st
 from memory_chain import create_chain, chat
 from emotion import detect_emotion
 from suggestions import get_suggestion
-from tracker import log_emotion
+from database import init_db, save_message, load_messages, save_emotion_db, get_weekly_insights
 from graph import build_mood_graph, build_emotion_pie
+from auth import show_auth
 from speak import speak
 import random
 
@@ -27,26 +28,6 @@ QUOTES = [
     "Your energy is worth protecting.",
 ]
 
-# Session state
-for key, val in {
-    "user_name": "friend",
-    "name_set": False,
-    "messages": [],
-    "emotion": "neutral",
-    "last_response": "",
-    "show_graph": False,
-    "show_mental": True,
-    "show_physical": True,
-    "mental_tip": "Start chatting to get your wellness tip ✨",
-    "physical_tip": "Start chatting to get your wellness tip 🌿",
-    "daily_quote": random.choice(QUOTES),
-}.items():
-    if key not in st.session_state:
-        st.session_state[key] = val
-
-if "chain" not in st.session_state:
-    st.session_state.chain = create_chain()
-
 st.markdown("""
 <style>
 html, body, .stApp, [data-testid="stAppViewContainer"],
@@ -61,7 +42,6 @@ html, body, .stApp, [data-testid="stAppViewContainer"],
     padding: 2rem 2.5rem 6rem 2.5rem !important;
     max-width: 860px !important;
 }
-
 [data-testid="stSidebar"] {
     background-color: #343148 !important;
     border-right: none !important;
@@ -74,7 +54,6 @@ html, body, .stApp, [data-testid="stAppViewContainer"],
     font-family: Georgia, serif !important;
 }
 [data-testid="stSidebar"] hr { border-color: #4a4560 !important; }
-
 [data-testid="stSidebar"] .stButton > button {
     background-color: #2a2840 !important;
     color: #D7C49E !important;
@@ -87,14 +66,11 @@ html, body, .stApp, [data-testid="stAppViewContainer"],
     margin-bottom: 8px !important;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
     transition: all 0.2s ease !important;
-    text-align: left !important;
 }
 [data-testid="stSidebar"] .stButton > button:hover {
     background-color: #D7C49E !important;
     color: #343148 !important;
-    border-color: #D7C49E !important;
 }
-
 h1 {
     color: #343148 !important;
     font-family: Georgia, serif !important;
@@ -109,7 +85,6 @@ h1 {
     margin-bottom: 1.5rem;
     margin-top: 4px;
 }
-
 .quote-card {
     background: #343148;
     border-radius: 16px;
@@ -131,7 +106,6 @@ h1 {
     text-transform: uppercase;
     font-weight: 500;
 }
-
 [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) {
     background-color: #EDE3CE !important;
     border-radius: 0 16px 16px 16px !important;
@@ -152,22 +126,16 @@ h1 {
 [data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) p {
     color: #D7C49E !important;
 }
-
 [data-testid="stChatInput"] {
     background: white !important;
     border-radius: 16px !important;
     border: 1.5px solid #D7C49E !important;
-}
-[data-testid="stChatInput"]:focus-within {
-    border-color: #343148 !important;
-    box-shadow: 0 0 0 3px rgba(52,49,72,0.1) !important;
 }
 .stChatFloatingInputContainer {
     background-color: #F5EFE4 !important;
     padding: 12px 0 8px 0 !important;
     border-top: 1px solid #E8D9BC !important;
 }
-
 .stButton > button {
     background-color: #343148 !important;
     color: #D7C49E !important;
@@ -184,14 +152,6 @@ h1 {
 .stButton > button * {
     color: #D7C49E !important;
 }
-}
-div.stButton > button:hover,
-.main .stButton > button:hover {
-    background-color: #4a4560 !important;
-    color: #D7C49E !important;
-    box-shadow: 0 4px 12px rgba(52,49,72,0.25) !important;
-}
-
 .insight-card {
     background: #2a2840;
     border-radius: 14px;
@@ -224,7 +184,6 @@ div.stButton > button:hover,
     letter-spacing: 0.5px;
     border: 1px solid #4a4560;
 }
-
 .stTextInput input {
     background: white !important;
     border: 1.5px solid #D7C49E !important;
@@ -233,11 +192,6 @@ div.stButton > button:hover,
     padding: 10px 14px !important;
     font-size: 14px !important;
 }
-.stTextInput input:focus {
-    border-color: #343148 !important;
-    box-shadow: 0 0 0 3px rgba(52,49,72,0.1) !important;
-}
-
 .streamlit-expanderHeader {
     background: #2a2840 !important;
     border: 1px solid #4a4560 !important;
@@ -249,14 +203,37 @@ div.stButton > button:hover,
     border-radius: 0 0 12px 12px !important;
     color: #D7C49E !important;
 }
-
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #D7C49E; border-radius: 4px; }
-
 p, div, span, label { color: #343148; }
 </style>
 """, unsafe_allow_html=True)
+
+# ── INIT DB ──
+init_db()
+
+# ── AUTH ──
+if not show_auth():
+    st.stop()
+
+# ── SESSION STATE ──
+for key, val in {
+    "user_name": st.session_state.get("auth_username", "friend"),
+    "name_set": True,
+    "messages": [],
+    "emotion": "neutral",
+    "last_response": "",
+    "show_graph": False,
+    "mental_tip": "Start chatting to get your wellness tip ✨",
+    "physical_tip": "Start chatting to get your wellness tip 🌿",
+    "daily_quote": random.choice(QUOTES),
+}.items():
+    if key not in st.session_state:
+        st.session_state[key] = val
+
+if "chain" not in st.session_state:
+    st.session_state.chain = create_chain()
 
 # ── SIDEBAR ──
 with st.sidebar:
@@ -275,13 +252,6 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("**Wellness**")
-
-    if st.button("💜 Mental Wellness"):
-        st.session_state.show_mental = not st.session_state.show_mental
-
-    if st.button("💪 Physical Wellness"):
-        st.session_state.show_physical = not st.session_state.show_physical
 
     if st.button("📊 Mood Graph"):
         st.session_state.show_graph = not st.session_state.show_graph
@@ -299,14 +269,52 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
+    # Weekly insights
+    insights = get_weekly_insights(st.session_state.user_name)
+    if insights:
+        st.markdown("---")
+        st.markdown("**📈 Weekly insights**")
+        emoji_map = {
+            "happy": "😊", "sad": "😔",
+            "anxious": "😰", "angry": "😤",
+            "low energy": "😴", "neutral": "😐"
+        }
+        mood_lines = "".join([
+            f"{emoji_map.get(e,'😐')} {e.title()}: {p}%<br>"
+            for e, p in insights['percentages'].items()
+        ])
+        st.markdown(f"""
+        <div class="insight-card">
+            <div class="insight-label">Mood Score</div>
+            <div class="insight-text" style="font-size:22px;font-weight:500;
+                 color:#D7C49E;">{insights['mood_score']}/100</div>
+        </div>
+        <div class="insight-card">
+            <div class="insight-label">This Week</div>
+            <div class="insight-text">{mood_lines}</div>
+        </div>
+        {f'<div class="insight-card"><div class="insight-label">Happiest Day</div><div class="insight-text">{insights["happiest_day"]}</div></div>' if insights["happiest_day"] else ''}
+        {f'<div class="insight-card"><div class="insight-label">Stress tends at</div><div class="insight-text">Around {insights["avg_stress_hour"]}:00</div></div>' if insights["avg_stress_hour"] else ''}
+        """, unsafe_allow_html=True)
+
     st.markdown("---")
 
+    if st.session_state.last_response:
+        if st.button("🔊 Hear Aura speak"):
+            audio = speak(st.session_state.last_response)
+            st.audio(audio, format="audio/mp3", autoplay=True)
+
     if st.button("🔄 Start Fresh"):
-        for key in ["messages", "name_set", "show_graph",
-                    "mental_tip", "physical_tip", "daily_quote",
-                    "last_response", "show_mental", "show_physical"]:
+        for key in ["messages", "show_graph", "mental_tip",
+                    "physical_tip", "daily_quote", "last_response"]:
             if key in st.session_state:
                 del st.session_state[key]
+        st.rerun()
+
+    st.markdown("---")
+    if st.button("🚪 Logout"):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
         st.rerun()
 
 # ── MAIN ──
@@ -323,39 +331,34 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ── NAME SCREEN ──
-if not st.session_state.name_set:
-    st.markdown("### Welcome. Let's begin your journey.")
-    name_input = st.text_input(
-        "What should Aura call you?",
-        placeholder="Your name..."
-    )
-    if st.button("Begin ✨"):
-        if name_input.strip():
-            st.session_state.user_name = name_input.strip()
-        st.session_state.name_set = True
-        st.rerun()
-    st.stop()
-
-# ── WELCOME MESSAGE ──
+# ── LOAD HISTORY FROM DB ──
 if len(st.session_state.messages) == 0:
-    welcome = f"Hey {st.session_state.user_name}! 🌸 I'm Aura, your personal growth companion. I'm here to listen, support you, and grow with you every single day. How are you feeling right now?"
-    st.session_state.messages.append({
-        "role": "assistant", "content": welcome
-    })
+    past = load_messages(st.session_state.user_name, limit=50)
+    if past:
+        st.session_state.messages = past
+        returning = f"Welcome back, {st.session_state.user_name.capitalize()}! 🌸 I remember you. How have you been since we last talked?"
+        st.session_state.messages.append({
+            "role": "assistant", "content": returning
+        })
+    else:
+        welcome = f"Hey {st.session_state.user_name.capitalize()}! 🌸 I'm Aura, your personal growth companion. I'm here to listen, support you, and grow with you every single day. How are you feeling right now?"
+        st.session_state.messages.append({
+            "role": "assistant", "content": welcome
+        })
+        save_message(st.session_state.user_name, "assistant", welcome)
 
 # ── CHAT HISTORY ──
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
 
-# ── VOICE BUTTON — between chat and input ──
+# ── VOICE BUTTON ──
 if st.session_state.last_response:
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-     if st.button("🔊 Hear Aura speak", key="voice_main"):
-         audio = speak(st.session_state.last_response)
-         st.audio(audio, format="audio/mp3", autoplay=True)
+        if st.button("🔊 Hear Aura speak", key="voice_main"):
+            audio = speak(st.session_state.last_response)
+            st.audio(audio, format="audio/mp3", autoplay=True)
 
 # ── MOOD GRAPH ──
 if st.session_state.show_graph:
@@ -371,7 +374,7 @@ if st.session_state.show_graph:
 
 # ── CHAT INPUT ──
 user_input = st.chat_input(
-    f"Share what's on your mind, {st.session_state.user_name}..."
+    f"Share what's on your mind, {st.session_state.user_name.capitalize()}..."
 )
 
 if user_input:
@@ -400,12 +403,17 @@ if user_input:
         "role": "assistant", "content": response
     })
 
-    log_emotion(st.session_state.user_name, emotion, user_input)
+    # Save to database
+    save_message(st.session_state.user_name, "user", user_input)
+    save_message(st.session_state.user_name, "assistant", response)
+    save_emotion_db(st.session_state.user_name, emotion, user_input)
+
+    # Get personalised wellness tips
     mental, physical = get_suggestion(
         emotion,
         user_input,
         st.session_state.user_name,
-        st.session_state.chain  # pass the LLM
+        st.session_state.chain
     )
     st.session_state.mental_tip = mental
     st.session_state.physical_tip = physical

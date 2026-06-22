@@ -1,4 +1,5 @@
 import streamlit as st
+from database import *
 from memory_chain import create_chain, chat
 from emotion import detect_emotion
 from suggestions import get_suggestion

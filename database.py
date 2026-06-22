@@ -42,7 +42,17 @@ def init_db():
             time TEXT,
             month TEXT
         )
-    """)
+    """)     
+    c.execute("""
+          CREATE TABLE IF NOT EXISTS journals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            title TEXT NOT NULL,
+            content TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+""")
+
 
     conn.commit()
     conn.close()
@@ -154,4 +164,38 @@ def get_weekly_insights(username):
         "happiest_day": happiest_day,
         "avg_stress_hour": avg_stress_hour,
         "mood_score": round((counts.get("happy", 0) / total) * 100)
+    
     }
+def save_journal(username, title, content):
+    conn = get_connection()
+
+    conn.execute(
+        """
+        INSERT INTO journals
+        (username,title,content)
+        VALUES (?,?,?)
+        """,
+        (username.lower(), title, content)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def load_journals(username):
+
+    conn = get_connection()
+
+    rows = conn.execute(
+        """
+        SELECT *
+        FROM journals
+        WHERE username=?
+        ORDER BY created_at DESC
+        """,
+        (username.lower(),)
+    ).fetchall()
+
+    conn.close()
+
+    return rows

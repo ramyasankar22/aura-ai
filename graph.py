@@ -12,11 +12,8 @@ EMOTION_COLORS = {
     "low energy": "#A29BFE",   # lavender
     "neutral":    "#95A5A6"    # grey
 }
-
-def build_mood_graph():
-    """Returns a plotly figure of mood over time"""
-    data = load_emotions()
-    
+def build_mood_graph(username):
+    data = load_emotions(username)
     if not data:
         return None
     
@@ -51,9 +48,8 @@ def build_mood_graph():
 
     return fig
 
-def build_emotion_pie(month=None):
-    """Pie chart — which emotion dominated this month"""
-    data = load_emotions()
+def build_emotion_pie(username, month=None):
+    data = load_emotions(username)
 
     if not data:
         return None

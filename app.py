@@ -156,6 +156,11 @@ st.markdown("""
         background: white !important;
         border-radius: 16px !important;
         border: 1.5px solid #D7C49E !important;
+        color: #343148 !important;
+    }
+    [data-testid="stChatInput"] textarea {
+    color: #343148 !important;
+    background: white !important;
     }
     .stChatFloatingInputContainer {
         background-color: #F5EFE4 !important;
